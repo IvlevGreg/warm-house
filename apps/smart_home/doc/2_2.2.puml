@@ -1,0 +1,65 @@
+@startuml
+!include https://raw.githubusercontent.com/plantuml-stdlib/C4-PlantUML/master/C4_Component.puml
+
+' uncomment the following line and comment the first to use locally
+' !include C4_Container.puml
+
+' LAYOUT_TOP_DOWN()
+' LAYOUT_AS_SKETCH()
+LAYOUT_WITH_LEGEND()
+
+title Диаграмма компонента Device service экосистемы «Теплый дом»
+
+AddElementTag("microService", $shape=EightSidedShape(), $bgColor="CornflowerBlue", $fontColor="white", $legendText="micro service\neight sided")
+AddElementTag("storage", $shape=RoundedBoxShape(), $bgColor="lightSkyBlue", $fontColor="white")
+
+Container(spa, "SPA app", "JavaScript, React", "Предоставляет всю функциональность экосистемы «Теплый дом» через веб браузер")
+Container(message_bus, "Message bus", "RabbitMQ", "Обрабатывает и направляет сообщения между сервисами")
+
+System_Boundary(c1, "Device service") {
+    Component(add_device, "Add device Controller", "MVC Rest Controller", "Позволяет добавить новое устройство в систему")
+    Component(device, "Device Controller", "MVC Rest Controller", "Управление устройствами в системе")
+
+    Component(heating_component, "Heating component", "MVC Rest Controller", "Предоставляет функциональность управления устройствами отопления")
+    Component(switches_component, "Switches component", "MVC Rest Controller", "Предоставляет функциональность управления устройствами включения/выключения")
+    Component(automatic_gates_component, "Automatic gates component", "MVC Rest Controller", "Предоставляет функциональность управления автоматическими воротами")
+    Component(video_surveillance_component, "Video surveillance component", "MVC Rest Controller", "Предоставляет функциональность управления видео-наблюдения воротами")
+
+}
+
+ContainerDb(heating_db, "Heating characteristics Database", "PostgreSQL 16.8", "Хранит информацию о характеристиках устройств", $tags = "storage")
+ContainerDb(switches_db, "Switches characteristics Database", "PostgreSQL 16.8", "Хранит информацию о характеристиках устройств", $tags = "storage")
+ContainerDb(automatic_gates_db, "Automatic characteristics Database", "PostgreSQL 16.8", "Хранит информацию о характеристиках устройств", $tags = "storage")
+ContainerDb(video_surveillance_db, "Video characteristics Database", "PostgreSQL 16.8", "Хранит информацию о характеристиках устройств", $tags = "storage")
+
+System_Ext(smart_home_system, "Система умного дома", "Модули умного дома установленные у клиента")
+
+
+Rel(message_bus, add_device, "Отправляет сообщение", "async, JSON/HTTPS")
+Rel(message_bus, device, "Отправляет сообщение", "async, JSON/HTTPS")
+
+
+Rel(spa, device, "Использует", "async, JSON/HTTPS")
+
+Rel(device, heating_component, "Использует")
+Rel(device, switches_component, "Использует")
+Rel(device, automatic_gates_component, "Использует")
+Rel(device, video_surveillance_component, "Использует")
+
+Rel(heating_component, smart_home_system, "Управляет устройствами ")
+Rel(switches_component, smart_home_system, "Управляет устройствами ")
+Rel(automatic_gates_component, smart_home_system, "Управляет устройствами ")
+Rel(video_surveillance_component, smart_home_system, "Управляет устройствами ")
+
+
+
+Rel_Down(add_device, heating_db, "Записывает/читает данные")
+Rel_Down(add_device, switches_db, "Записывает/читает данные")
+Rel_Down(add_device, automatic_gates_db, "Записывает/читает данные")
+Rel_Down(add_device, video_surveillance_db, "Записывает/читает данные")
+Rel(add_device, message_bus, "Отправляет сообщение если нет информации о устройстве", "async, JSON/HTTPS")
+Rel(add_device, message_bus, "Отправляет сообщение для привязки устройства пользователю", "async, JSON/HTTPS")
+
+
+SHOW_LEGEND()
+@enduml
