@@ -17,7 +17,7 @@ Container(spa, "SPA app", "JavaScript, React", "Предоставляет вс�
 Container(message_bus, "Message bus", "RabbitMQ", "Обрабатывает и направляет сообщения между сервисами")
 
 System_Boundary(c1, "User Сервис") {
-    Component(sign, "Sign In Controller", "MVC Rest Controller", "Позволяет пользователю авторизоваться в системе")
+    Component(sign, "Sign In Controller", "MVC Rest Controller", "Управляет данными пользователя")
     Component(user_data, "User data Controller", "MVC Rest Controller", "Позволяет пользователю авторизоваться в системе")
     Component(user_devices, "User devices Controller", "MVC Rest Controller", "Позволяет пользователю просматривать/удалять/добавлять устройства")
     Component(user_scenarios, "User scenarios Controller", "MVC Rest Controller", "Позволяет пользователю просматривать/удалять/добавлять свои сценарии")

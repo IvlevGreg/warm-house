@@ -1,3 +1,52 @@
 @startuml
+!include https://raw.githubusercontent.com/plantuml-stdlib/C4-PlantUML/master/C4_Component.puml
+!include https://raw.githubusercontent.com/plantuml-stdlib/C4-PlantUML/master/C4_Container.puml
+
+allow_mixing
+skinparam classFontSize 13
+
+Container_Boundary(devices, "User Devices Controller") {
+    class UserDevicesController {
+        + getDevices(userId): List<DeviceInfo>
+        + addDevice(userId, deviceId)
+        + removeDevice(userId, deviceId)
+    }
+
+    class UserDevicesService {
+        - repository: UserDevicesRepository
+        + validateOwnership(userId, deviceId)
+        + syncWithExternalAPI()
+    }
+
+    class UserDevicesRepository {
+        + findUserDevices(userId): List<UserDevice>
+        + addMapping(userId, deviceId)
+        + deleteMapping(userId, deviceId)
+    }
+
+    class UserDevice {
+        - userId: UUID
+        - deviceId: UUID
+    }
+
+    UserDevicesController --> UserDevicesService : depends on
+    UserDevicesService --> UserDevicesRepository : depends on
+    UserDevicesRepository --> UserDevice : manages
+}
+
+Container(spa, "SPA app", "JavaScript, React", "Предоставляет всю функциональность экосистемы «Теплый дом» через веб браузер")
+
+ComponentDb(device_registry, "User devices Database", "PostgreSQL 16.8", "Хранит связи user-device")
+Container(message_bus, "Message bus", "RabbitMQ", "Обрабатывает и направляет сообщения между сервисами")
+
+UserDevicesController <.. spa : REST API
+UserDevicesRepository --> device_registry
+message_bus  ..> UserDevicesController
+
+UpdateElementStyle(spa, $bgColor="#e3f2fd")
+UpdateElementStyle(device_registry, $bgColor="#c8e6c9")
+UpdateElementStyle(message_bus, $bgColor="#ffecb3")
+
+
 
 @enduml
