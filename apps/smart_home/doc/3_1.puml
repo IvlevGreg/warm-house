@@ -2,7 +2,6 @@
 
 title ER-диаграмма экосистемы «Теплый дом»
 
-
 entity User {
   *user_id (PK)
   --
@@ -11,14 +10,21 @@ entity User {
   full_name
   created_at
   last_login
-  location_id
+}
+
+entity House {
+    *house_id (PK)
+    --
+    address
+    installation_date
 }
 
 entity Device {
   *device_id (PK)
   --
   serial_number
-  device_type
+  brand
+  model
   status
   installation_date
   partner_id (FK)
@@ -30,7 +36,6 @@ entity Partner {
   partner_name
   api_endpoint
   auth_key
-  integration_date
 }
 
 entity Scenario {
@@ -50,12 +55,36 @@ entity UserDevice {
   custom_name
 }
 
+entity DeviceType {
+  *type_id (PK)
+  --
+  name
+  description
+}
+
+entity UserHouse {
+  *user_id (PK, FK)
+  *house_id (PK, FK)
+  --
+  assigned_at
+  custom_name
+}
+
 entity UserScenario {
   *user_id (PK, FK)
   *scenario_id (PK, FK)
   --
   created_at
   last_modified
+  custom_name
+}
+
+entity HouseDevice {
+  *house_id (PK, FK)
+  *device_id (PK, FK)
+  --
+  installation_date
+  location
 }
 
 entity ScenarioDevice {
@@ -66,12 +95,23 @@ entity ScenarioDevice {
   action_parameters
 }
 
+entity DeviceTypeDevice {
+  *type_id (PK, FK)
+  *device_id (PK, FK)
+
+}
+
+House ||--o{ HouseDevice : "contains"
+Device ||-up-o{ HouseDevice : "installed in"
 User ||--o{ UserDevice : "has"
+User ||--o{ UserHouse : "has"
 User ||--o{ UserScenario : "manages"
-Device }o--|| Partner : "from"
+Device }o-right-|| Partner : "from"
 User ||--o{ Scenario : "creates"
 Scenario ||--o{ ScenarioDevice : "controls"
 Device ||--o{ ScenarioDevice : "used in"
+Device ||-up-o{ DeviceTypeDevice : "has"
+DeviceType ||--o{ DeviceTypeDevice : "categorizes"
 
 entity HeatingDevice {
   *device_id (PK, FK)
@@ -79,6 +119,7 @@ entity HeatingDevice {
   target_temperature
   current_temperature
   heating_mode
+  state
 }
 
 entity SwitchDevice {
@@ -87,6 +128,7 @@ entity SwitchDevice {
   switch_state
   power_consumption
   last_toggled
+  state
 }
 
 entity CameraDevice {
@@ -95,22 +137,33 @@ entity CameraDevice {
   resolution
   streaming_url
   motion_detection_enabled
+  state
 }
 
 
-note bottom of ScenarioDevice
-  Хранится в отдельных базах данных в микросервисе  ScenarioDevice
-end note
+entity Thermostat {
+  *device_id (PK, FK)
+  --
+  target_temp
+  current_temp
+  timestamp
+  state
+}
 
-note bottom of UserDevice
-  Хранится в отдельных базах данных в микросервисе  User Service
-end note
+entity TelemetryData {
+  *telemetry_id (PK)
+  --
+  timestamp
+  temperature
+  power_consumption
+  motion_detected
+  state
+}
 
-note bottom of UserScenario
-  Хранится в отдельных базах данных в микросервисе  User Service
-end note
-
+Device ||--|| Thermostat : extends
 Device ||--|| HeatingDevice : extends
 Device ||--|| SwitchDevice : extends
 Device ||--|| CameraDevice : extends
+Device ||--o{ TelemetryData : "generates"
+
 @enduml
