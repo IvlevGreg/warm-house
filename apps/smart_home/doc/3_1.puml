@@ -1,0 +1,116 @@
+@startuml
+
+title ER-диаграмма экосистемы «Теплый дом»
+
+
+entity User {
+  *user_id (PK)
+  --
+  email
+  password_hash
+  full_name
+  created_at
+  last_login
+  location_id
+}
+
+entity Device {
+  *device_id (PK)
+  --
+  serial_number
+  device_type
+  status
+  installation_date
+  partner_id (FK)
+}
+
+entity Partner {
+  *partner_id (PK)
+  --
+  partner_name
+  api_endpoint
+  auth_key
+  integration_date
+}
+
+entity Scenario {
+  *scenario_id (PK)
+  --
+  scenario_name
+  description
+  trigger_conditions
+  is_active
+}
+
+entity UserDevice {
+  *user_id (PK, FK)
+  *device_id (PK, FK)
+  --
+  assigned_at
+  custom_name
+}
+
+entity UserScenario {
+  *user_id (PK, FK)
+  *scenario_id (PK, FK)
+  --
+  created_at
+  last_modified
+}
+
+entity ScenarioDevice {
+  *scenario_id (PK, FK)
+  *device_id (PK, FK)
+  --
+  action_type
+  action_parameters
+}
+
+User ||--o{ UserDevice : "has"
+User ||--o{ UserScenario : "manages"
+Device }o--|| Partner : "from"
+User ||--o{ Scenario : "creates"
+Scenario ||--o{ ScenarioDevice : "controls"
+Device ||--o{ ScenarioDevice : "used in"
+
+entity HeatingDevice {
+  *device_id (PK, FK)
+  --
+  target_temperature
+  current_temperature
+  heating_mode
+}
+
+entity SwitchDevice {
+  *device_id (PK, FK)
+  --
+  switch_state
+  power_consumption
+  last_toggled
+}
+
+entity CameraDevice {
+  *device_id (PK, FK)
+  --
+  resolution
+  streaming_url
+  motion_detection_enabled
+}
+
+
+note bottom of ScenarioDevice
+  Хранится в отдельных базах данных в микросервисе  ScenarioDevice
+end note
+
+note bottom of UserDevice
+  Хранится в отдельных базах данных в микросервисе  User Service
+end note
+
+note bottom of UserScenario
+  Хранится в отдельных базах данных в микросервисе  User Service
+end note
+
+Device ||--|| HeatingDevice : extends
+Device ||--|| SwitchDevice : extends
+Device ||--|| CameraDevice : extends
+@enduml
