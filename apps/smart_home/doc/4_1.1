@@ -1,0 +1,41 @@
+asyncapi: 3.0.0
+info:
+  title: Телеметрия устройств
+  version: 1.0.0
+channels:
+  device/telemetry:
+    address: device/telemetry
+    messages:
+      publish.message:
+        payload:
+          type: object
+          properties:
+            deviceId:
+              type: string
+              format: uuid
+            data:
+              $ref: '#/components/schemas/TelemetryData'
+operations:
+  device/telemetry.publish:
+    action: receive
+    channel:
+      $ref: '#/channels/device~1telemetry'
+    messages:
+      - $ref: '#/channels/device~1telemetry/messages/publish.message'
+components:
+  schemas:
+    TelemetryData:
+      type: object
+      properties:
+        timestamp:
+          type: string
+          format: date-time
+        temperature:
+          type: number
+        powerConsumption:
+          type: number
+      status:
+          type: integer
+          description: Device Status
+          format: int32
+          example: 1
