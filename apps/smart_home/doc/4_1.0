@@ -1,0 +1,151 @@
+openapi: 3.0.0
+info:
+  title: API для экосистемы «Теплый дом»
+  version: 0.0.0-dev.1
+
+
+paths:
+  /device/{deviceId}:
+    get:
+      tags:
+      - Устройства
+      summary: Получить информацию об устройстве
+      parameters:
+        - name: deviceId
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+      responses:
+        '200':
+          description: Успешно
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Device"
+        '404':
+          description: Устройство не найдено
+        default:
+          description: Непредвиденная ошибка
+
+  /device/{deviceId}/status:
+    patch:
+      tags:
+      - Устройства
+      summary: Обновить статус устройства
+      parameters:
+        - name: deviceId
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                status:
+                  type: string
+                  enum: [online, offline, error]
+      responses:
+        '200':
+          description: Статус обновлен
+        '404':
+          description: Устройство не найдено
+        default:
+          description: Непредвиденная ошибка
+
+  /users/{userId}/devices:
+    post:
+      tags:
+      - Пользователи
+      summary: Привязать устройство к пользователю
+      parameters:
+        - name: userId
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                deviceId:
+                  type: string
+                  format: uuid
+                customName:
+                  type: string
+      responses:
+        '200':
+          description: Устройство привязано
+        '404':
+          description: Устройство или Пользовательб не найден
+        default:
+          description: Непредвиденная ошибка
+
+  /scenarios/{scenarioId}/devices:
+    post:
+      tags:
+      - Сценарии
+      summary: Добавить устройство в сценарий
+      parameters:
+        - name: scenarioId
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                deviceId:
+                  type: string
+                  format: uuid
+                actionType:
+                  type: string
+                  enum: [enable, disable, set_temperature]
+      responses:
+        '200':
+          description: Устройство добавлено
+        '404':
+          description: Устройство или сценарий не найден
+        default:
+          description: Непредвиденная ошибка
+
+components:
+  schemas:
+    Device:
+      type: object
+      properties:
+        device_id:
+          type: integer
+          format: int64
+          example: 1
+        partner_id:
+          type: string
+          format: uuid
+        installation_date:
+          type: string
+          format: date-time
+        serial_number:
+          type: string
+        brand:
+          type: string
+        model:
+          type: string
+        status:
+          type: integer
+          description: Device Status
+          format: int32
+          example: 1
+
+

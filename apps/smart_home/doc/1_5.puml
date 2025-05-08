@@ -1,0 +1,30 @@
+@startuml "enterprise"
+!include https://raw.githubusercontent.com/plantuml-stdlib/C4-PlantUML/master/C4_Context.puml
+' uncomment the following line and comment the first to use locally
+' !include C4_Context.puml
+
+LAYOUT_TOP_DOWN()
+'LAYOUT_AS_SKETCH()
+LAYOUT_WITH_LEGEND()
+
+Person(customer, "Пользователь", "Пользователь экосистемы «Теплый дом»")
+
+Boundary(c0, "Экосистема «Теплый дом»") {
+    System(warm_house, "Система умный дом", "Позволяет управлять отоплением в доме и проверять температуру")
+}
+
+System_Ext(sensors, "Датчики", "Собирают текущую информацию о климате в доме клиента")
+System_Ext(home_sensor_installer, "Специалист по подключению", "В доме клиента подключает систему отопления к экосистеме «Теплый дом»")
+System_Ext(install_system, "Система подключения к «Теплый дом»", "Управляет подключением к «Теплый дом»")
+System_Ext(heating_system, "Система отопления", "Отапливает дом клиента")
+
+Rel(customer, warm_house, "Использует")
+Rel_R(customer, install_system, "Запрашивает подключение к системе «Теплый дом»")
+Rel(home_sensor_installer, warm_house, "Подключает систему отопления к умному дому")
+Rel( install_system, home_sensor_installer, "Отправляет мастера к клиенту")
+Rel(home_sensor_installer, sensors, "Устанавливает и подключает датчики к системе умного дома")
+Rel_R(sensors, warm_house, "Подключены к системе теплого дома")
+Rel_L(warm_house, sensors, "Использует")
+Rel(warm_house, heating_system, "Управляет отоплением")
+
+@enduml

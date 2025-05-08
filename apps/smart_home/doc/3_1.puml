@@ -1,0 +1,169 @@
+@startuml
+
+title ER-диаграмма экосистемы «Теплый дом»
+
+entity User {
+  *user_id (PK)
+  --
+  email
+  password_hash
+  full_name
+  created_at
+  last_login
+}
+
+entity House {
+    *house_id (PK)
+    --
+    address
+    installation_date
+}
+
+entity Device {
+  *device_id (PK)
+  --
+  serial_number
+  brand
+  model
+  status
+  installation_date
+  partner_id (FK)
+}
+
+entity Partner {
+  *partner_id (PK)
+  --
+  partner_name
+  api_endpoint
+  auth_key
+}
+
+entity Scenario {
+  *scenario_id (PK)
+  --
+  scenario_name
+  description
+  trigger_conditions
+  is_active
+}
+
+entity UserDevice {
+  *user_id (PK, FK)
+  *device_id (PK, FK)
+  --
+  assigned_at
+  custom_name
+}
+
+entity DeviceType {
+  *type_id (PK)
+  --
+  name
+  description
+}
+
+entity UserHouse {
+  *user_id (PK, FK)
+  *house_id (PK, FK)
+  --
+  assigned_at
+  custom_name
+}
+
+entity UserScenario {
+  *user_id (PK, FK)
+  *scenario_id (PK, FK)
+  --
+  created_at
+  last_modified
+  custom_name
+}
+
+entity HouseDevice {
+  *house_id (PK, FK)
+  *device_id (PK, FK)
+  --
+  installation_date
+  location
+}
+
+entity ScenarioDevice {
+  *scenario_id (PK, FK)
+  *device_id (PK, FK)
+  --
+  action_type
+  action_parameters
+}
+
+entity DeviceTypeDevice {
+  *type_id (PK, FK)
+  *device_id (PK, FK)
+
+}
+
+House ||--o{ HouseDevice : "contains"
+Device ||-up-o{ HouseDevice : "installed in"
+User ||--o{ UserDevice : "has"
+User ||--o{ UserHouse : "has"
+User ||--o{ UserScenario : "manages"
+Device }o-right-|| Partner : "from"
+User ||--o{ Scenario : "creates"
+Scenario ||--o{ ScenarioDevice : "controls"
+Device ||--o{ ScenarioDevice : "used in"
+Device ||-up-o{ DeviceTypeDevice : "has"
+DeviceType ||--o{ DeviceTypeDevice : "categorizes"
+
+entity HeatingDevice {
+  *device_id (PK, FK)
+  --
+  target_temperature
+  current_temperature
+  heating_mode
+  state
+}
+
+entity SwitchDevice {
+  *device_id (PK, FK)
+  --
+  switch_state
+  power_consumption
+  last_toggled
+  state
+}
+
+entity CameraDevice {
+  *device_id (PK, FK)
+  --
+  resolution
+  streaming_url
+  motion_detection_enabled
+  state
+}
+
+
+entity Thermostat {
+  *device_id (PK, FK)
+  --
+  target_temp
+  current_temp
+  timestamp
+  state
+}
+
+entity TelemetryData {
+  *telemetry_id (PK)
+  --
+  timestamp
+  temperature
+  power_consumption
+  motion_detected
+  state
+}
+
+Device ||--|| Thermostat : extends
+Device ||--|| HeatingDevice : extends
+Device ||--|| SwitchDevice : extends
+Device ||--|| CameraDevice : extends
+Device ||--o{ TelemetryData : "generates"
+
+@enduml

@@ -1,0 +1,51 @@
+@startuml
+!include https://raw.githubusercontent.com/plantuml-stdlib/C4-PlantUML/master/C4_Component.puml
+
+' uncomment the following line and comment the first to use locally
+' !include C4_Container.puml
+
+' LAYOUT_TOP_DOWN()
+' LAYOUT_AS_SKETCH()
+LAYOUT_WITH_LEGEND()
+
+title Диаграмма компонента User service экосистемы «Теплый дом»
+
+AddElementTag("microService", $shape=EightSidedShape(), $bgColor="CornflowerBlue", $fontColor="white", $legendText="micro service\neight sided")
+AddElementTag("storage", $shape=RoundedBoxShape(), $bgColor="lightSkyBlue", $fontColor="white")
+
+Container(spa, "SPA app", "JavaScript, React", "Предоставляет всю функциональность экосистемы «Теплый дом» через веб браузер")
+Container(message_bus, "Message bus", "RabbitMQ", "Обрабатывает и направляет сообщения между сервисами")
+
+System_Boundary(c1, "User Сервис") {
+    Component(sign, "Sign In Controller", "MVC Rest Controller", "Управляет данными пользователя")
+    Component(user_data, "User data Controller", "MVC Rest Controller", "Позволяет пользователю авторизоваться в системе")
+    Component(user_devices, "User devices Controller", "MVC Rest Controller", "Позволяет пользователю просматривать/удалять/добавлять устройства")
+    Component(user_scenarios, "User scenarios Controller", "MVC Rest Controller", "Позволяет пользователю просматривать/удалять/добавлять свои сценарии")
+}
+
+ ContainerDb(customer_db, "User Database", "PostgreSQL 16.8", "Хранит информацию о авторизации, креды, доступы и тд клиента", $tags = "storage")
+ ContainerDb(user_data_db, "User data Database", "PostgreSQL 16.8", "Хранит информацию о данных клиента", $tags = "storage")
+ ContainerDb(customer_devices_db, "User devices Database", "PostgreSQL 16.8", "Хранит информацию о подключенных устройствах клиента", $tags = "storage")
+ ContainerDb(customer_scenarios_db, "User scenarios Database", "PostgreSQL 16.8", "Хранит информацию о настроенных сценарияx пользователем", $tags = "storage")
+
+
+
+Rel(spa, sign, "Отправляет запрос пользователя", "async, JSON/HTTPS")
+Rel(spa, user_devices, "Отправляет запрос пользователя", "async, JSON/HTTPS")
+Rel(spa, user_scenarios, "Отправляет запрос пользователя", "async, JSON/HTTPS")
+Rel(spa, user_data, "Отправляет запрос пользователя", "async, JSON/HTTPS")
+
+Rel(sign,customer_db , "Отправляет/получает информацию о авторизационных данных пользователя")
+
+Rel(user_data,user_data_db , "Отправляет/получает информацию о данных пользователя")
+
+Rel(message_bus, user_devices , "Отправляет запрос на привязку устройства к пользователю")
+Rel(message_bus ,user_scenarios, "Отправляет запрос на привязку сценария к пользователю")
+
+Rel(user_devices,customer_devices_db , "Записывает информацию о новом/удаленном устройстве")
+
+Rel(user_scenarios,customer_scenarios_db , "Записывает информацию о новом/удаленном сценарии")
+
+
+SHOW_LEGEND()
+@enduml

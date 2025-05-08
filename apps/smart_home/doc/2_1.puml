@@ -1,0 +1,61 @@
+@startuml
+!include https://raw.githubusercontent.com/plantuml-stdlib/C4-PlantUML/master/C4_Container.puml
+' uncomment the following line and comment the first to use locally
+' !include C4_Container.puml
+
+' LAYOUT_TOP_DOWN()
+' LAYOUT_AS_SKETCH()
+LAYOUT_WITH_LEGEND()
+
+title Диаграмма контейнеров экосистемы «Теплый дом»
+
+AddElementTag("microService", $shape=EightSidedShape(), $bgColor="CornflowerBlue", $fontColor="white", $legendText="micro service\neight sided")
+AddElementTag("storage", $shape=RoundedBoxShape(), $bgColor="lightSkyBlue", $fontColor="white")
+
+Person(user, "User", "Пользователь экосистемы «Теплый дом»")
+
+System_Boundary(c1, "Экосистема «Теплый дом»") {
+    Container(web_app, "Web app", "Go, React, MVC", "Предоставляет статический контент и SPA «Теплый дом»")
+    Container(spa, "SPA app", "JavaScript, React", "Предоставляет всю функциональность экосистемы «Теплый дом» через веб браузер")
+
+    Container(user_service, "User service", "Go", "Предоставляет возможность изменять/добавлять данные пользователя", $tags = "microService")
+    ContainerDb(user_db, "User Database", "PostgreSQL 16.8", "Хранит информацию о клиенте, о его подключенных устройствах, сценариях и тд", $tags = "storage")
+
+    Container(integration_service, "Partner device integration service", "Go", "Сервис подключения устройств к системе", $tags = "microService")
+    ContainerDb(integration_db, "Integration database", "PostgreSQL 16.8", "Хранит информацию необходимую для подключения и работы устройств партнеров", $tags = "storage")
+
+    Container(device_service, "Device service", "Go", "Отвечает за управление подключенными устройствами", $tags = "microService")
+    ContainerDb(device_db, "Device database", "PostgreSQL 16.8", "Хранит информацию о устройствах", $tags = "storage")
+
+    Container(message_bus, "Message bus", "RabbitMQ", "Обрабатывает и направляет сообщения между сервисами")
+
+}
+
+
+System_Ext(smart_home_system, "Smart house system", "Модули умного дома установленные у клиента")
+System_Ext(partners_system, "Partners", "Api партнера")
+
+Rel(user, web_app, "Использует", "HTTPS")
+Rel(user, spa, "Использует", "HTTPS")
+
+Rel_Neighbor(web_app, spa, "Получает")
+
+Rel(spa, user_service, "Отправляет запрос пользователя", "async, JSON/HTTPS")
+Rel(spa, device_service, "Управляет устройствами", "async, JSON/HTTPS")
+
+Rel(user_service, spa, "Отправляет обновленные данные", "WebSocket")
+Rel(user_service, user_db, "Хранит данные")
+
+BiRel(message_bus, integration_service, "Отправляет сообщения")
+BiRel(message_bus, device_service, "Отправляет сообщения")
+Rel(message_bus, user_service, "Отправляет запрос на привязку устройства/сценария")
+
+Rel(integration_service, integration_db, "Хранит данные")
+Rel(integration_service, partners_system, "Использует","Стандартные протоколы")
+
+Rel(device_service, device_db, "Хранит данные")
+Rel(device_service, smart_home_system, "Использует", "async, HTTPS")
+
+
+SHOW_LEGEND()
+@enduml
